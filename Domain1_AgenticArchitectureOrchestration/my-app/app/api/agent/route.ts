@@ -103,12 +103,10 @@ async function executeTool(
 }
 
 export async function POST(request: Request) {
-  const body = await request.json();
-  console.log("Request body:", body);
-  const { instruction } = body;
-  if (!instruction || typeof instruction !== "string") {
+  const { userInput } = await request.json();
+  if (!userInput || typeof userInput !== "string") {
     return Response.json(
-      { error: "Missing 'instruction' in request body" },
+      { error: "Missing 'userInput' in request body" },
       { status: 400 },
     );
   }
@@ -116,19 +114,19 @@ export async function POST(request: Request) {
   const messages: MessageParam[] = [
     {
       role: "user",
-      content: instruction,
+      content: userInput,
     },
   ];
 
-  console.log("Initial messages:", messages);
+  console.log("Initial user input:", messages[0].content);
 
   const trace = new TraceLog();
 
+  // Agentic Loop Lifecycle
   while (true) {
-    // Call the Anthropic API with the current messages and tools to get a response
-    // The model will decide whether to respond with Text or to call a Tool
-    // based on the instruction and the conversation context
-    const anthropicMessage = await client.messages.create({
+    // send Claude (the Anthropic API) the current messages and tools,
+    // get a response, and check if it wants to call a tool or respond with text
+    const claudeResponse = await client.messages.create({
       model: "claude-sonnet-5",
       max_tokens: 1024,
       system:
@@ -137,38 +135,56 @@ export async function POST(request: Request) {
       messages,
     });
 
-    messages.push({ role: "assistant", content: anthropicMessage.content });
+    messages.push({ role: "assistant", content: claudeResponse.content });
 
-    trace.recordContentBlocks(anthropicMessage.content);
+    for (const contentBlock of claudeResponse.content) {
+      if (contentBlock.type === "text") {
+        trace.addText(contentBlock.text);
+      } else if (contentBlock.type === "tool_use") {
+        trace.addToolCall(contentBlock.name, contentBlock.input);
+      }
+    }
 
-    if (anthropicMessage.stop_reason === "tool_use") {
+    // Check the stop reason to determine if we need to execute a tool, pause, or finish
+
+    console.log("Stop reason:", claudeResponse.stop_reason);
+
+    if (claudeResponse.stop_reason === "tool_use") {
       const toolResults: ToolResultBlockParam[] = [];
-      for (const contentBlock of anthropicMessage.content) {
+      for (const contentBlock of claudeResponse.content) {
+        // If the content block is a tool use,
+        // execute the tool and add the result to the trace and messages
         if (contentBlock.type === "tool_use") {
-          const result = await executeTool(
+          console.log(
+            `Tool to execute: ${contentBlock.name} with input:`,
+            contentBlock.input,
+          );
+          const toolResult = await executeTool(
             contentBlock.name,
             contentBlock.input as Record<string, unknown>,
           );
-          trace.addToolResult(result);
+          trace.addToolResult(toolResult);
           toolResults.push({
             type: "tool_result",
             tool_use_id: contentBlock.id,
-            content: result,
+            content: toolResult,
           });
-        } 
+        }
       }
+
       messages.push({ role: "user", content: toolResults });
+
       continue; // Continue the loop to get the next response after tool execution
-    } else if (anthropicMessage.stop_reason === "pause_turn") {
+    } else if (claudeResponse.stop_reason === "pause_turn") {
       trace.addPauseTurn();
       continue; // Continue the loop to let the model finish its paused turn
-    } else if (anthropicMessage.stop_reason === "max_tokens") {
+    } else if (claudeResponse.stop_reason === "max_tokens") {
       trace.addMaxTokens();
-    } else if (anthropicMessage.stop_reason === "stop_sequence") {
+    } else if (claudeResponse.stop_reason === "stop_sequence") {
       trace.addStopSequence();
-    } else if (anthropicMessage.stop_reason === "end_turn") {
+    } else if (claudeResponse.stop_reason === "end_turn") {
       trace.addEndTurn();
-    } else if (anthropicMessage.stop_reason === "refusal") {
+    } else if (claudeResponse.stop_reason === "refusal") {
       trace.addRefusal();
     }
     break;

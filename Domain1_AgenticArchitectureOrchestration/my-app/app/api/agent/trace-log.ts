@@ -19,17 +19,10 @@ export class TraceLog {
     });
   }
 
-  recordContentBlocks(contentBlocks: ContentBlock[]) {
-    for (const contentBlock of contentBlocks) {
-      if (contentBlock.type === "text") {
-        this.addText(contentBlock.text);
-      } else if (contentBlock.type === "tool_use") {
-        this.addToolCall(contentBlock.name, contentBlock.input);
-      }
-    }
-  }
+  
 
   addToolResult(content: string) {
+    console.log("Tool result:", content);
     this.entries.push({ type: "tool_result", content });
   }
 
