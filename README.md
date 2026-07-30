@@ -1,1 +1,1 @@
-"# ClaudeCodeCertifiedArchitect" 
+# ClaudeCodeCertifiedArchitect
