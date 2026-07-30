@@ -11,7 +11,7 @@ import json
 import os
 
 import requests
-from anthropic import Anthropic
+from anthropic import Anthropic # type: ignore
 from dotenv import load_dotenv
 
 load_dotenv()
