@@ -56,6 +56,23 @@ async for message in query(prompt="Fix the failing tests in this repo"):
     print(message)
 ```
 
+### Adding custom tools to the Agent SDK: `createSdkMcpServer`
+
+The Agent SDK exposes *every* tool to Claude through one uniform interface: MCP. Built-ins, remote MCP servers, and your own functions all end up looking the same (`mcp__<server>__<tool>`). Since `query()` owns the agentic loop internally, there's no `execute_tool()`-style dispatch hook like you'd write with the Client SDK — MCP is the only registration path.
+
+`createSdkMcpServer` lets your own functions join that system without actually running a separate MCP server: it wraps `tool()` definitions into something that behaves like an MCP server to the SDK, but stays in-process — no subprocess, no port, no network hop.
+
+```ts
+const travelServer = createSdkMcpServer({
+  name: "travel-tools",
+  tools: [weatherTool, bookFlightTool, bookHotelTool], // each built with tool()
+});
+
+query({ prompt, options: { mcpServers: { "travel-tools": travelServer } } });
+```
+
+Only needed when Claude must call a tool that isn't already a built-in or a real external MCP server — an agent using only `Read`/`Bash`/`Grep` never touches it.
+
 ## Side-by-side
 
 | | Client SDK (+ Tool Runner) | Claude Agent SDK |
