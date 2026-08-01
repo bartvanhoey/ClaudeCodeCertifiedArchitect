@@ -23,7 +23,8 @@ async def main() -> None:
             model=model,
         )
         import json
-        print(json.dumps([block.model_dump() for block in response.content]))
+        # print(json.dumps([block.model_dump() for block in response.content]))
+        print(json.dumps(response.model_dump(), indent=2  ))
 
 
 asyncio.run(main())
