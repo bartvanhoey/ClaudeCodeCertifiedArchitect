@@ -12,7 +12,7 @@ async def main() -> None:
         api_key=os.environ.get("ANTHROPIC_API_KEY"),
         http_client=DefaultAioHttpClient(),
     ) as client:
-        message = await client.messages.create(
+        response = await client.messages.create(
             max_tokens=1024,
             messages=[
                 {
@@ -22,7 +22,8 @@ async def main() -> None:
             ],
             model=model,
         )
-        print(message.content)
+        import json
+        print(json.dumps([block.model_dump() for block in response.content]))
 
 
 asyncio.run(main())
