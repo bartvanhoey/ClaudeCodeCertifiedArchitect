@@ -1,5 +1,7 @@
 {
   "cSpell.words": [
+    "agentic",
+    "aiohttp",
     "cust",
     "dotenv",
     "elif",
@@ -7,6 +9,7 @@
     "Meteo",
     "OAAA",
     "undertested",
+    "venv",
     "weathercode"
   ]
 }
