@@ -7,6 +7,7 @@ from anthropic import AsyncAnthropic, DefaultAioHttpClient
 load_dotenv()
 
 # Tutorial: Build a tool-using agent
+# https://platform.claude.com/docs/en/agents-and-tools/tool-use/build-a-tool-using-agent
 # Define one tool. The input_schema is a JSON Schema object describing
 # the arguments Claude should pass when it calls this tool. 
 tools = [
@@ -53,7 +54,24 @@ async def main() -> None:
             )
 
         response = await create_response()
-        # print(json.dumps(response.model_dump(), indent=2))
+        print('Response from Claude:')
+        print(json.dumps(response.model_dump(), indent=2))
+        tool_use = next((block for block in response.content if block.type == "tool_use"), None)
+        # print(tool_use)
+
+        # messages.append({ "role": "assistant", "content": response.content})
+        # messages.append({ "role": "user",
+        #                             "content": [
+        #                                 {
+        #                                     "type" : "tool_result",
+        #                                     "tool_use_id" : tool_use.id,
+        #                                     "content": json.dumps(run_tool(tool_use.name, tool_use.input))
+        #                                 }
+        #                             ]
+        #                })
+        # print('Follow-up response from Claude:')
+        # followup_response = await create_response()
+        # print(json.dumps(followup_response.model_dump(), indent=2))
 
         # Loop until Claude stops asking for tools.
         # Each iteration runs the requested tool, appends the result to history
@@ -73,7 +91,7 @@ async def main() -> None:
                              ]
                              })
             response = await create_response()
-            # print(json.dumps(response.model_dump(), indent=2))
+            print(json.dumps(response.model_dump(), indent=2))
 
     # final_text = next(block for block in response.content if block.type == "text")
     # print(final_text.text)
