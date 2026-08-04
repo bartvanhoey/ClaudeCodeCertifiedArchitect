@@ -53,7 +53,7 @@ async def main() -> None:
             )
 
         response = await create_response()
-        print(json.dumps(response.model_dump(), indent=2))
+        # print(json.dumps(response.model_dump(), indent=2))
 
         # Loop until Claude stops asking for tools.
         # Each iteration runs the requested tool, appends the result to history
@@ -73,10 +73,10 @@ async def main() -> None:
                              ]
                              })
             response = await create_response()
-            print(json.dumps(response.model_dump(), indent=2))
+            # print(json.dumps(response.model_dump(), indent=2))
 
-    final_text = next(block for block in response.content if block.type == "text")
-    print(final_text.text)
+    # final_text = next(block for block in response.content if block.type == "text")
+    # print(final_text.text)
 
 
 asyncio.run(main())
