@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hub-and-Spoke Architecture Visual Guide</title>
+    <style>
+        :root {
+            --blue: #3b82f6;
+            --green: #10b981;
+            --purple: #8b5cf6;
+            --red: #ef4444;
+            --gray: #6b7280;
+            --light: #f3f4f6;
+            --dark: #111827;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, var(--dark) 0%, #1f2937 100%);
+            color: var(--light);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 1rem;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #9ca3af;
+            margin-bottom: 3rem;
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .section {
+            background: rgba(31, 41, 55, 0.8);
+            border: 2px solid rgba(59, 130, 246, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        .section h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--blue);
+        }
+
+        .architecture-box {
+            background: rgba(15, 23, 42, 0.6);
+            border: 2px solid rgba(16, 185, 129, 0.3);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .architecture-box.hub {
+            border-color: rgba(59, 130, 246, 0.5);
+            background: rgba(30, 58, 138, 0.3);
+        }
+
+        .architecture-box.spoke {
+            border-color: rgba(139, 92, 246, 0.5);
+            background: rgba(88, 28, 135, 0.2);
+        }
+
+        .architecture-box.tool {
+            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(5, 46, 22, 0.2);
+        }
+
+        .label {
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--gray);
+        }
+
+        .architecture-box .label {
+            color: #d1d5db;
+        }
+
+        .diagram {
+            background: rgba(15, 23, 42, 0.4);
+            border: 2px solid rgba(75, 85, 99, 0.3);
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .comparison-table {
+            width: 100%;
+            margin: 2rem 0;
+            border-collapse: collapse;
+        }
+
+        .comparison-table th,
+        .comparison-table td {
+            padding: 1rem;
+            text-align: left;
+            border: 1px solid rgba(107, 114, 128, 0.3);
+        }
+
+        .comparison-table th {
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--blue);
+            font-weight: 600;
+        }
+
+        .comparison-table tr:nth-child(even) {
+            background: rgba(31, 41, 55, 0.5);
+        }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-list li {
+            padding: 0.75rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: var(--green);
+            font-weight: bold;
+        }
+
+        .flow-step {
+            display: flex;
+            align-items: center;
+            margin: 1rem 0;
+        }
+
+        .flow-number {
+            background: var(--blue);
+            color: white;
+            width: 2.5rem;
+            height: 2.5rem;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .flow-text {
+            flex: 1;
+        }
+
+        .arrow {
+            text-align: center;
+            color: var(--blue);
+            font-size: 1.5rem;
+            margin: 0.5rem 0;
+        }
+
+        .code-block {
+            background: #0f172a;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.5rem;
+            padding: 1.5rem;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.85rem;
+            line-height: 1.5;
+            margin: 1rem 0;
+        }
+
+        .agent-card {
+            background: rgba(88, 28, 135, 0.2);
+            border: 2px solid rgba(139, 92, 246, 0.5);
+            border-radius: 0.75rem;
+            padding: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .agent-card h4 {
+            color: var(--purple);
+            margin-bottom: 0.75rem;
+        }
+
+        .tool-badge {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.85rem;
+            margin: 0.25rem;
+        }
+
+        .highlight {
+            color: var(--blue);
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🏗️ Hub-and-Spoke Architecture</h1>
+        <p class="subtitle">True AI Subagent Pattern with Autonomous Reasoning</p>
+
+        <div class="grid">
+            <div class="section">
+                <h2>The Hub (Orchestrator)</h2>
+                <div class="architecture-box hub">
+                    <div class="label">OrchestratorAgent</div>
+                    <p>Routes incoming issues intelligently</p>
+                    <p style="margin-top: 0.5rem; font-size: 0.9rem;">Responsibilities:</p>
+                    <ul class="feature-list">
+                        <li>Dynamic routing (LLM-based)</li>
+                        <li>Agent coordination</li>
+                        <li>Response synthesis</li>
+                        <li>No domain decisions</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>The Spokes (Subagents)</h2>
+                <div class="agent-card">
+                    <h4>💰 BillingAgent</h4>
+                    <p>Handles refunds, invoices, payments</p>
+                    <div style="margin-top: 0.5rem;">
+                        <span class="tool-badge">check_account_balance</span>
+                        <span class="tool-badge">get_invoice</span>
+                        <span class="tool-badge">process_refund</span>
+                    </div>
+                </div>
+                <div class="agent-card">
+                    <h4>🔧 TechnicalAgent</h4>
+                    <p>Diagnoses service issues</p>
+                    <div style="margin-top: 0.5rem;">
+                        <span class="tool-badge">check_service_status</span>
+                        <span class="tool-badge">get_error_logs</span>
+                        <span class="tool-badge">restart_service</span>
+                    </div>
+                </div>
+                <div class="agent-card">
+                    <h4>👤 AccountAgent</h4>
+                    <p>Manages accounts & escalations</p>
+                    <div style="margin-top: 0.5rem;">
+                        <span class="tool-badge">get_customer_history</span>
+                        <span class="tool-badge">update_contact_info</span>
+                        <span class="tool-badge">escalate_to_human</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="diagram">
+            <h2 style="margin-bottom: 1.5rem;">How It Works</h2>
+            <div class="flow-step">
+                <div class="flow-number">1</div>
+                <div class="flow-text">
+                    <strong>Customer submits issue</strong>
+                    <p style="color: #9ca3af; margin-top: 0.25rem; font-size: 0.9rem;">Web form or API call</p>
+                </div>
+            </div>
+            <div class="arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="flow-number">2</div>
+                <div class="flow-text">
+                    <strong>Orchestrator routes intelligently</strong>
+                    <p style="color: #9ca3af; margin-top: 0.25rem; font-size: 0.9rem;">LLM analyzes issue, determines best agent</p>
+                </div>
+            </div>
+            <div class="arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="flow-number">3</div>
+                <div class="flow-text">
+                    <strong>Subagent processes autonomously</strong>
+                    <div style="color: #9ca3af; margin-top: 0.25rem; font-size: 0.9rem;">
+                        <p>• Decides what tools are needed</p>
+                        <p>• Executes tools and analyzes results</p>
+                        <p>• Iterates until complete</p>
+                        <p>• Makes independent decisions</p>
+                    </div>
+                </div>
+            </div>
+            <div class="arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="flow-number">4</div>
+                <div class="flow-text">
+                    <strong>Orchestrator synthesizes response</strong>
+                    <p style="color: #9ca3af; margin-top: 0.25rem; font-size: 0.9rem;">Creates professional customer-facing response</p>
+                </div>
+            </div>
+            <div class="arrow">↓</div>
+
+            <div class="flow-step">
+                <div class="flow-number">5</div>
+                <div class="flow-text">
+                    <strong>Customer receives resolution</strong>
+                    <p style="color: #9ca3af; margin-top: 0.25rem; font-size: 0.9rem;">Clear, empathetic, actionable response</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section" style="margin-bottom: 3rem;">
+            <h2>Key Differences: Autonomy Levels</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Aspect</th>
+                        <th>Simple Function Calls</th>
+                        <th>True Subagents</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Type</strong></td>
+                        <td>Function dispatch</td>
+                        <td>Autonomous agents</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tool Access</strong></td>
+                        <td>None</td>
+                        <td>Domain-specific</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Loops</strong></td>
+                        <td>Single call</td>
+                        <td>Multi-turn iterations</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Decision Making</strong></td>
+                        <td>None (predetermined)</td>
+                        <td>Independent</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Routing</strong></td>
+                        <td>Fixed order</td>
+                        <td>Dynamic/intelligent</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Autonomy</strong></td>
+                        <td>Very Low</td>
+                        <td>High</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Example: Billing Issue Resolution</h2>
+            <p style="margin-bottom: 1rem;">
+                <strong>Issue:</strong> "I was charged twice for my subscription"
+            </p>
+
+            <div class="code-block">Step 1: BillingAgent receives issue
+Step 2: Agent thinks: "I need to investigate"
+Step 3: Agent calls check_account_balance
+Step 4: Results show duplicate charge
+Step 5: Agent thinks: "Need more details"
+Step 6: Agent calls get_invoice
+Step 7: Confirmed duplicate charge of $89.99
+Step 8: Agent thinks: "Customer deserves refund"
+Step 9: Agent calls process_refund
+Step 10: Refund processed successfully
+Step 11: Agent thinks: "I have enough information"
+Step 12: STOP and report findings to orchestrator
+
+Result: Refund of $89.99 processed for duplicate charge
+            </div>
+
+            <p style="margin-top: 1.5rem; color: #9ca3af;">
+                <strong>Key insight:</strong> The agent <span class="highlight">decided</span> to use those tools in that order. It wasn't scripted. It could have decided differently based on the results.
+            </p>
+        </div>
+
+        <div style="text-align: center; margin-top: 3rem; padding: 2rem; border-top: 1px solid rgba(107, 114, 128, 0.3);">
+            <p style="color: #9ca3af; font-size: 0.9rem;">
+                Hub-and-Spoke with True Subagents • 3 Agents • 9 Tools • Multi-Turn Reasoning
+            </p>
+        </div>
+    </div>
+</body>
+</html>
